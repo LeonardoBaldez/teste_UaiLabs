@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório Notas Escolar</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        h1 { color: #333; }
+        
+        /* Estilização dos cards de resumo */
+        .resumo-container { display: flex; gap: 20px; margin-bottom: 20px; width: 100%; max-width: 800px; justify-content: space-between; }
+        .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex: 1; text-align: center; }
+        .card h3 { margin: 0 0 10px 0; font-size: 14px; color: #666; }
+        .card p { margin: 0; font-size: 18px; font-weight: bold; color: #2c3e50; }
+        
+        /* Estilização da tabela */
+        table { width: 100%; max-width: 800px; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #009879; color: white; }
+        tr:hover { background-color: #f1f1f1; }
+        
+        /* Cores do status */
+        .aprovado { color: #27ae60; font-weight: bold; }
+        .reprovado { color: #c0392b; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>📊 Painel da Turma</h1>
+
+    <div class="resumo-container">
+        <div class="card">
+            <h3>Média Geral da Sala</h3>
+            <p id="txtMediaGeral">--</p>
+        </div>
+        <div class="card">
+            <h3>Melhor Aluno(a)</h3>
+            <p id="txtMelhorAluno">--</p>
+        </div>
+        <div class="card">
+            <h3>Pior Aluno(a)</h3>
+            <p id="txtPiorAluno">--</p>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Aluno</th>
+                <th>Notas</th>
+                <th>Média</th>
+                <th>Situação</th>
+            </tr>
+        </thead>
+        <tbody id="tabelaCorpo">
+            </tbody>
+    </table>
+
+    <script>
+        const estudantes = [
+            { nome: "Ana Silva",      notas: [8.5, 7.0, 9.0] },
+            { nome: "Bruno Souza",    notas: [5.0, 4.5, 6.0] },
+            { nome: "Carla Dias",     notas: [9.0, 9.5, 10.0] },
+            { nome: "Daniel Rocha",   notas: [6.5, 7.0, 6.0] },
+            { nome: "Eduarda Lima",   notas: [3.0, 5.0, 4.0] },
+            { nome: "Felipe Alves",   notas: [7.5, 8.0, 7.0] },
+            { nome: "Gabriela Melo",  notas: [10.0, 9.5, 9.0] },
+            { nome: "Hugo Santos",    notas: [2.0, 3.5, 5.0] },
+            { nome: "Igor Costa",     notas: [6.0, 6.0, 6.0] },
+            { nome: "Julia Pereira",  notas: [8.0, 8.5, 9.0] },
+            { nome: "Lucas Oliveira", notas: [5.5, 6.0, 5.0] },
+            { nome: "Mariana Luz",    notas: [9.5, 8.0, 8.5] },
+            { nome: "Nicolas Ferraz", notas: [4.0, 4.0, 5.0] },
+            { nome: "Olivia Martins", notas: [7.0, 7.5, 7.0] },
+            { nome: "Paulo Ribeiro",  notas: [6.0, 5.5, 7.0] }
+        ];
+
+        //Lógica de cálculo da média
+        
+        const calcularMedia = (notas) => notas.reduce((acc, n) => acc + n, 0) / notas.length;
+
+        function obterDadosProcessados(lista) {
+            return lista.map(aluno => ({
+                nome: aluno.nome,
+                notas: aluno.notas,
+                media: calcularMedia(aluno.notas)
+            }));
+        }
+
+        //  Criação da tabela
+        function renderizarTela() {
+            // Processar dados
+            const alunosProcessados = obterDadosProcessados(estudantes);
+            
+            // Estatísticas
+            const melhor = alunosProcessados.reduce((a, b) => a.media > b.media ? a : b);
+            const pior = alunosProcessados.reduce((a, b) => a.media < b.media ? a : b);
+            const mediaSala = alunosProcessados.reduce((acc, a) => acc + a.media, 0) / alunosProcessados.length;
+
+            // Preencher Cards
+            document.getElementById('txtMediaGeral').innerText = mediaSala.toFixed(2);
+            document.getElementById('txtMelhorAluno').innerText = `${melhor.nome} (${melhor.media.toFixed(1)})`;
+            document.getElementById('txtPiorAluno').innerText = `${pior.nome} (${pior.media.toFixed(1)})`;
+
+            // Preencher Tabela
+            const tbody = document.getElementById('tabelaCorpo');
+            tbody.innerHTML = ''; // Limpa tabela antes de preencher
+
+            alunosProcessados.forEach(aluno => {
+                const tr = document.createElement('tr');
+                // Criação do elemento com nome
+                const tdNome = document.createElement('td');
+                tdNome.textContent = aluno.nome;
+                tr.appendChild(tdNome);
+                // Criação do elemento com as notas
+                const tdNotas = document.createElement('td');
+                tdNotas.textContent = aluno.notas.join(' | ');
+                tr.appendChild(tdNotas);
+                // Criação do elemento com a média
+                const tdMedia = document.createElement('td');
+                const strong = document.createElement('strong');
+                strong.textContent = aluno.media.toFixed(1);
+                tdMedia.appendChild(strong);
+                tr.appendChild(tdMedia);
+                // Criação do elemento com o status do aluno
+                const tdStatus = document.createElement('td');
+                const status = aluno.media >= 7.0 ? 'Aprovado' : 'Reprovado';
+                const classeCor = aluno.media >= 7.0 ? 'aprovado' : 'reprovado';
+
+                tdStatus.textContent = status;
+                tdStatus.classList.add(classeCor); 
+                tr.appendChild(tdStatus);
+                // Adiciona a linha a tabela
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Roda a função assim que a tela carrega
+        renderizarTela();
+
+    </script>
+</body>
+</html>
